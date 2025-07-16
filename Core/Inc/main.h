@@ -31,7 +31,8 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#define MY_DISP_HOR_RES 128
+#define MY_DISP_VER_RES 160
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

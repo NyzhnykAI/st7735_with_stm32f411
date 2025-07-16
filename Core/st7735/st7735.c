@@ -99,7 +99,7 @@ static void ST7735_Reset() {
     HAL_GPIO_WritePin(ST7735_RES_GPIO_Port, ST7735_RES_Pin, GPIO_PIN_SET);
 }
 
-static void ST7735_WriteCommand(uint8_t cmd) {
+void ST7735_WriteCommand(uint8_t cmd) {
     HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&ST7735_SPI_PORT, &cmd, sizeof(cmd), HAL_MAX_DELAY);
 }

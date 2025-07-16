@@ -25,6 +25,10 @@
 #include "st7735.h"
 #include "fonts.h"
 #include "testimg.h"
+#include <string.h>
+#include "GNSS.h"
+#include "LCDController.h"
+#include "lvgl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,14 +49,20 @@
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
 
-/* USER CODE BEGIN PV */
+UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 
+/* USER CODE BEGIN PV */
+uint8_t uartBuffer[256] = {'\0'};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -65,63 +75,68 @@ void init() {
 
 void loop() {
     // Check border
-    ST7735_FillScreen(ST7735_BLACK);
+    //ST7735_FillScreen(ST7735_BLACK);
 
-    for(int x = 0; x < ST7735_WIDTH; x++) {
-        ST7735_DrawPixel(x, 0, ST7735_RED);
-        ST7735_DrawPixel(x, ST7735_HEIGHT-1, ST7735_RED);
-    }
-
-    for(int y = 0; y < ST7735_HEIGHT; y++) {
-        ST7735_DrawPixel(0, y, ST7735_RED);
-        ST7735_DrawPixel(ST7735_WIDTH-1, y, ST7735_RED);
-    }
-
-    HAL_Delay(3000);
+//    for(int x = 0; x < ST7735_WIDTH; x++) {
+//        ST7735_DrawPixel(x, 0, ST7735_RED);
+//        ST7735_DrawPixel(x, ST7735_HEIGHT-1, ST7735_RED);
+//    }
+//
+//    for(int y = 0; y < ST7735_HEIGHT; y++) {
+//        ST7735_DrawPixel(0, y, ST7735_RED);
+//        ST7735_DrawPixel(ST7735_WIDTH-1, y, ST7735_RED);
+//    }
+//
+//    HAL_Delay(3000);
 
     // Check fonts
-    ST7735_FillScreen(ST7735_BLACK);
-    ST7735_WriteString(0, 0, "Font_7x10, red on black, lorem ipsum dolor sit amet", Font_7x10, ST7735_RED, ST7735_BLACK);
-    ST7735_WriteString(0, 3*10, "Font_11x18, green, lorem ipsum", Font_11x18, ST7735_GREEN, ST7735_BLACK);
-    ST7735_WriteString(0, 3*10+3*18, "Font_16x26", Font_16x26, ST7735_BLUE, ST7735_BLACK);
-    HAL_Delay(2000);
+//    ST7735_FillScreen(ST7735_BLACK);
+//    char stringData[256] = {'\0'};
+//
+//    strncpy(stringData, uartBuffer, 255);
+//
+//    ST7735_WriteString(0, 0, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+////    ST7735_WriteString(0, 0, "Font_7x10, red on black, lorem ipsum dolor sit amet", Font_7x10, ST7735_RED, ST7735_BLACK);
+////    ST7735_WriteString(0, 3*10, "Font_11x18, green, lorem ipsum", Font_11x18, ST7735_GREEN, ST7735_BLACK);
+////    ST7735_WriteString(0, 3*10+3*18, "Font_16x26", Font_16x26, ST7735_BLUE, ST7735_BLACK);
+//    HAL_Delay(1000);
 
     // Check colors
-    ST7735_FillScreen(ST7735_BLACK);
-    ST7735_WriteString(0, 0, "BLACK", Font_11x18, ST7735_WHITE, ST7735_BLACK);
-    HAL_Delay(500);
-
-    ST7735_FillScreen(ST7735_BLUE);
-    ST7735_WriteString(0, 0, "BLUE", Font_11x18, ST7735_BLACK, ST7735_BLUE);
-    HAL_Delay(500);
-
-    ST7735_FillScreen(ST7735_RED);
-    ST7735_WriteString(0, 0, "RED", Font_11x18, ST7735_BLACK, ST7735_RED);
-    HAL_Delay(500);
-
-    ST7735_FillScreen(ST7735_GREEN);
-    ST7735_WriteString(0, 0, "GREEN", Font_11x18, ST7735_BLACK, ST7735_GREEN);
-    HAL_Delay(500);
-
-    ST7735_FillScreen(ST7735_CYAN);
-    ST7735_WriteString(0, 0, "CYAN", Font_11x18, ST7735_BLACK, ST7735_CYAN);
-    HAL_Delay(500);
-
-    ST7735_FillScreen(ST7735_MAGENTA);
-    ST7735_WriteString(0, 0, "MAGENTA", Font_11x18, ST7735_BLACK, ST7735_MAGENTA);
-    HAL_Delay(500);
-
-    ST7735_FillScreen(ST7735_YELLOW);
-    ST7735_WriteString(0, 0, "YELLOW", Font_11x18, ST7735_BLACK, ST7735_YELLOW);
-    HAL_Delay(500);
-
-    ST7735_FillScreen(ST7735_WHITE);
-    ST7735_WriteString(0, 0, "WHITE", Font_11x18, ST7735_BLACK, ST7735_WHITE);
-    HAL_Delay(500);
-
-
-    // Display test image 128x128
-    ST7735_DrawImage(0, 0, ST7735_WIDTH, ST7735_HEIGHT, (uint16_t*)test_img_128x128);
+//    ST7735_FillScreen(ST7735_BLACK);
+//    ST7735_WriteString(0, 0, "BLACK", Font_11x18, ST7735_WHITE, ST7735_BLACK);
+//    HAL_Delay(500);
+//
+//    ST7735_FillScreen(ST7735_BLUE);
+//    ST7735_WriteString(0, 0, "BLUE", Font_11x18, ST7735_BLACK, ST7735_BLUE);
+//    HAL_Delay(500);
+//
+//    ST7735_FillScreen(ST7735_RED);
+//    ST7735_WriteString(0, 0, "RED", Font_11x18, ST7735_BLACK, ST7735_RED);
+//    HAL_Delay(500);
+//
+//    ST7735_FillScreen(ST7735_GREEN);
+//    ST7735_WriteString(0, 0, "GREEN", Font_11x18, ST7735_BLACK, ST7735_GREEN);
+//    HAL_Delay(500);
+//
+//    ST7735_FillScreen(ST7735_CYAN);
+//    ST7735_WriteString(0, 0, "CYAN", Font_11x18, ST7735_BLACK, ST7735_CYAN);
+//    HAL_Delay(500);
+//
+//    ST7735_FillScreen(ST7735_MAGENTA);
+//    ST7735_WriteString(0, 0, "MAGENTA", Font_11x18, ST7735_BLACK, ST7735_MAGENTA);
+//    HAL_Delay(500);
+//
+//    ST7735_FillScreen(ST7735_YELLOW);
+//    ST7735_WriteString(0, 0, "YELLOW", Font_11x18, ST7735_BLACK, ST7735_YELLOW);
+//    HAL_Delay(500);
+//
+//    ST7735_FillScreen(ST7735_WHITE);
+//    ST7735_WriteString(0, 0, "WHITE", Font_11x18, ST7735_BLACK, ST7735_WHITE);
+//    HAL_Delay(500);
+//
+//
+//    // Display test image 128x128
+//    ST7735_DrawImage(0, 0, ST7735_WIDTH, ST7735_HEIGHT, (uint16_t*)test_img_128x128);
 
 /*
     // Display test image 128x128 pixel by pixel
@@ -134,10 +149,21 @@ void loop() {
         }
     }
 */
-    HAL_Delay(15000);
-
+//    HAL_Delay(15000);
 
 }
+
+
+///* Initialize low level display driver */
+//void lv_port_disp_init(void);
+//
+///* Enable updating the screen (the flushing process) when disp_flush() is called by LVGL
+// */
+//void disp_enable_update(void);
+//
+///* Disable updating the screen (the flushing process) when disp_flush() is called by LVGL
+// */
+//void disp_disable_update(void);
 /* USER CODE END 0 */
 
 /**
@@ -169,17 +195,77 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  init();
+  ST7735_Init();
+  ST7735_FillScreen(ST7735_BLACK);
+  /* Initialize LVGL */
+  lv_init();
+  lv_port_disp_init();
+  lv_demo_benchmark();
+
+//	ST7735_FillScreen(ST7735_BLACK);
+//	GNSS_Init(&GNSS_Handle, &huart2);
+//	HAL_Delay(1000);
+//	GNSS_LoadConfig(&GNSS_Handle);
+//	GNSS_SetMode(&GNSS_Handle, Automotiv);
+//	uint32_t Timer = HAL_GetTick();
+//	ST7735_FillScreen(ST7735_BLACK);
+
+
+
+  //HAL_UART_Receive_DMA(&huart2, uartBuffer, 256U);
+  char stringData[256] = {'\0'};
   while (1)
   {
-    loop();
+    //loop();
+	  lv_task_handler();
+	  HAL_Delay(5);
+
+
+
+
+//	  if ((HAL_GetTick() - Timer) > 1000) {
+//	  			GNSS_GetUniqID(&GNSS_Handle);
+//	  			GNSS_ParseBuffer(&GNSS_Handle);
+//	  			HAL_Delay(250);
+//	  			GNSS_GetPVTData(&GNSS_Handle);
+//	  			GNSS_ParseBuffer(&GNSS_Handle);
+//
+//
+//
+//	  			sprintf(stringData, "Day: %d-%d-%d", GNSS_Handle.day, GNSS_Handle.month,GNSS_Handle.year);
+//	  			ST7735_WriteString(0, 0, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			sprintf(stringData, "Time: %d:%d:%d", GNSS_Handle.hour, GNSS_Handle.min,GNSS_Handle.sec);
+//	  			ST7735_WriteString(0, 10, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			sprintf(stringData, "Status of fix: %d", GNSS_Handle.fixType);
+//	  			ST7735_WriteString(0, 20, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			sprintf(stringData, "Lat: %f", GNSS_Handle.fLat);
+//	  			ST7735_WriteString(0, 30, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			sprintf(stringData, "Lon: %f", GNSS_Handle.fLon);
+//	  			ST7735_WriteString(0, 40, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			//memset(stringData, 0, 256);
+//	  			sprintf(stringData, "Height above ellipsoid: %d", GNSS_Handle.height);
+//	  			ST7735_WriteString(0, 50, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			sprintf(stringData, "Height above mean sea level: %d", GNSS_Handle.hMSL);
+//	  			ST7735_WriteString(0, 70, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			sprintf(stringData, "Ground Speed (2-D): %d", GNSS_Handle.gSpeed);
+//	  			ST7735_WriteString(0, 90, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			sprintf(stringData, "Unique ID: %04X %04X %04X %04X %04X \n\r",
+//	  					GNSS_Handle.uniqueID[0], GNSS_Handle.uniqueID[1],
+//	  					GNSS_Handle.uniqueID[2], GNSS_Handle.uniqueID[3],
+//	  					GNSS_Handle.uniqueID[4], GNSS_Handle.uniqueID[5]);
+//	  			ST7735_WriteString(0, 110, stringData, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+//	  			Timer = HAL_GetTick();
+//	  		    //ST7735_FillScreen(ST7735_BLACK);
+//	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -210,7 +296,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 16;
-  RCC_OscInitStruct.PLL.PLLN = 192;
+  RCC_OscInitStruct.PLL.PLLN = 200;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -256,7 +342,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -268,6 +354,58 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 9600;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA1_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
 }
 
