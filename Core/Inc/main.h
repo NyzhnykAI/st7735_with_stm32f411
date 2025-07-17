@@ -33,6 +33,12 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #define MY_DISP_HOR_RES 128
 #define MY_DISP_VER_RES 160
+#define ST7735_RES_Pin       GPIO_PIN_10
+#define ST7735_RES_GPIO_Port GPIOA
+#define ST7735_CS_Pin        GPIO_PIN_8
+#define ST7735_CS_GPIO_Port  GPIOA
+#define ST7735_DC_Pin        GPIO_PIN_9
+#define ST7735_DC_GPIO_Port  GPIOA
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
