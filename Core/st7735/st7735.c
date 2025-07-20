@@ -115,9 +115,9 @@ init_cmds3[] = {            		// Init for 7735R, part 3 (red or green tab)
 
 static void ST7735_GPIO_Init(void);
 static void ST7735_WriteCommand(uint8_t cmd);
-static void ST7735_WriteData(uint8_t* buff, size_t buff_size);
+void ST7735_WriteData(uint8_t* buff, size_t buff_size);
 static void ST7735_ExecuteCommandList(const uint8_t *addr);
-static void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 static void ST7735_WriteChar(uint16_t x, uint16_t y, char ch, FontDef font, uint16_t color, uint16_t bgcolor);
 
 static void ST7735_GPIO_Init(void)
@@ -156,7 +156,7 @@ static void ST7735_WriteCommand(uint8_t cmd)
 #endif
 }
 
-static void ST7735_WriteData(uint8_t* buff, size_t buff_size)
+void ST7735_WriteData(uint8_t* buff, size_t buff_size)
 {
 	TFT_DC_D();
 #ifdef USE_SPI_DMA
@@ -197,7 +197,7 @@ static void ST7735_ExecuteCommandList(const uint8_t *addr)
     }
 }
 
-static void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
     // column address set
     ST7735_WriteCommand(ST7735_CASET);
@@ -333,7 +333,7 @@ void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint
     if((y + h - 1) >= _height) return;
 
     TFT_CS_L();
-    ST7735_SetAddressWindow(x, y, x+w-1, y+h-1);
+    ST7735_SetAddressWindow(x, y, x+w, y+h);
     ST7735_WriteData((uint8_t*)data, sizeof(uint16_t)*w*h);
     TFT_CS_H();
 }

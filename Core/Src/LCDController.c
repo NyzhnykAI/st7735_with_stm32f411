@@ -13,6 +13,7 @@
 #include "main.h"
 #include <stdbool.h>
 #include "lvgl.h"
+#include "st7735.h"
 /*********************
  *      DEFINES
  *********************/
@@ -76,15 +77,15 @@ void lv_port_disp_init(void)
      */
 
     /* Example for 1) */
-//    static lv_disp_draw_buf_t draw_buf_dsc_1;
-//    static lv_color_t buf_1[MY_DISP_HOR_RES * 10];                          /*A buffer for 10 rows*/
-//    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+    static lv_disp_draw_buf_t draw_buf_dsc_1;
+    static lv_color_t buf_1[MY_DISP_HOR_RES * 10];                          /*A buffer for 10 rows*/
+    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
 
      /* Example for 2) */
-     static lv_disp_draw_buf_t draw_buf_dsc_2;
-     static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];                        /*A buffer for 10 rows*/
-     static lv_color_t buf_2_2[MY_DISP_HOR_RES * 10];                        /*An other buffer for 10 rows*/
-     lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+//     static lv_disp_draw_buf_t draw_buf_dsc_2;
+//     static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];                        /*A buffer for 10 rows*/
+//     static lv_color_t buf_2_2[MY_DISP_HOR_RES * 10];                        /*An other buffer for 10 rows*/
+//     lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
 
      /* Example for 3) also set disp_drv.full_refresh = 1 below*/
 //     static lv_disp_draw_buf_t draw_buf_dsc_3;
@@ -110,7 +111,7 @@ void lv_port_disp_init(void)
     disp_drv.flush_cb = disp_flush;
 
     /*Set a display buffer*/
-    disp_drv.draw_buf = &draw_buf_dsc_2;
+    disp_drv.draw_buf = &draw_buf_dsc_1;
 
     /*Required for Example 3)*/
     //disp_drv.full_refresh = 1;
@@ -157,35 +158,52 @@ uint16_t data[128*160] = {0};
  *'lv_disp_flush_ready()' has to be called when finished.*/
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    if(disp_flush_enabled) {
-        /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
-    	//ST7735_DrawTouchGFX(area->x1, area->y1, area->x2, area->y2, color_p);
-        int32_t x;
-        int32_t y;
-        uint16_t*dat = data;
-        for(y = area->y1; y <= area->y2; y++) {
-            for(x = area->x1; x <= area->x2; x++) {
-                /*Put a pixel to the display. For example:*/
-                /*put_px(x, y, *color_p)*/
-            	uint16_t color = color_p->full;
-            	uint8_t dataT[] = { color >> 8, color & 0xFF };
-            	memcpy(dat, dataT, 2);
-            	dat++;
-                color_p++;
-            }
-        }
-        ST7735_DrawImage(area->x1, area->y1, area->x2-area->x1, area->y2-area->y1, data);
-//        for(y = area->y1; y <= area->y2; y++) {
-//            for(x = area->x1; x <= area->x2; x++) {
-//            	 ST7735_DrawPixel(x, y, &data[x][y]);
-//            }
-//        }
-
+    if (!disp_flush_enabled) {
+        lv_disp_flush_ready(disp_drv);
+        return;
     }
 
-    /*IMPORTANT!!!
-     *Inform the graphics library that you are ready with the flushing*/
+    int32_t w = area->x2 - area->x1 + 1;
+    int32_t h = area->y2 - area->y1 + 1;
+    TFT_CS_L();
+    // Set address window (correct orientation!)
+    ST7735_SetAddressWindow(area->x1, area->y1, area->x2, area->y2);
+
+    // Write image data directly (assumes LV_COLOR_DEPTH == 16)
+    ST7735_WriteData((uint8_t*)color_p, w * h * 2);
+    TFT_CS_H();
     lv_disp_flush_ready(disp_drv);
+
+//    if(disp_flush_enabled) {
+//        /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
+//    	//ST7735_DrawTouchGFX(area->x1, area->y1, area->x2, area->y2, color_p);
+//        int32_t x;
+//        int32_t y;
+//        memset(data, 0, sizeof(data));
+//        uint16_t*dat = data;
+//        for(y = area->y1; y <= area->y2; y++) {
+//            for(x = area->x1; x <= area->x2; x++) {
+//                /*Put a pixel to the display. For example:*/
+//                /*put_px(x, y, *color_p)*/
+//            	uint16_t color = color_p->full;
+//            	uint8_t dataT[] = { color >> 8, color & 0xFF };
+//            	memcpy(dat, dataT, 2);
+//            	dat++;
+//                color_p++;
+//            }
+//        }
+//        ST7735_DrawImage(area->x1, area->y1, area->x2-area->x1, area->y2-area->y1+1, data);
+////        for(y = area->y1; y <= area->y2; y++) {
+////            for(x = area->x1; x <= area->x2; x++) {
+////            	 ST7735_DrawPixel(x, y, &data[x][y]);
+////            }
+////        }
+//
+//    }
+//
+//    /*IMPORTANT!!!
+//     *Inform the graphics library that you are ready with the flushing*/
+//    lv_disp_flush_ready(disp_drv);
 }
 
 /*OPTIONAL: GPU INTERFACE*/

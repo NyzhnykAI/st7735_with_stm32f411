@@ -53,7 +53,7 @@
 									<listOptionValue builtIn="false" value="C:/Users/alexn/STM32Cube/Repository/STM32Cube_FW_F4_V1.28.2/Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Core/st7735}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Core/ublox}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Drivers/lvgl}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/lvgl}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1850991972" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -87,6 +87,7 @@
 						<entry excluding="st7735" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Core/st7735"/>
 						<entry excluding="lvgl/tests" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Drivers"/>
+						<entry excluding="tests" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lib/lvgl"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
