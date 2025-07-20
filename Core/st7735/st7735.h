@@ -144,19 +144,10 @@ void ST7735_FillTriangle( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_
 void ST7735_DrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 void ST7735_DrawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
 void ST7735_DrawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
-void ST7735_WriteData(uint8_t* buff, size_t buff_size);
-void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 void ST7735_SetRotation(uint8_t m);
+void ST7735_DrawArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* data);
 uint8_t ST7735_GetRotation(void);
 int16_t ST7735_GetHeight(void);
 int16_t ST7735_GetWidth(void);
 
-#define TFT_BL_H()	HAL_GPIO_WritePin(ST7735_BL_GPIO_Port, ST7735_BL_Pin, GPIO_PIN_SET)
-#define TFT_BL_L()	HAL_GPIO_WritePin(ST7735_BL_GPIO_Port, ST7735_BL_Pin, GPIO_PIN_RESET)
-#define TFT_CS_H()	HAL_GPIO_WritePin(ST7735_CS_GPIO_Port, ST7735_CS_Pin, GPIO_PIN_SET)
-#define TFT_CS_L()	HAL_GPIO_WritePin(ST7735_CS_GPIO_Port, ST7735_CS_Pin, GPIO_PIN_RESET)
-#define TFT_DC_D()	HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_SET)
-#define TFT_DC_C()	HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_RESET)
-#define TFT_RES_H()	HAL_GPIO_WritePin(ST7735_RES_GPIO_Port, ST7735_RES_Pin, GPIO_PIN_SET)
-#define TFT_RES_L()	HAL_GPIO_WritePin(ST7735_RES_GPIO_Port, ST7735_RES_Pin, GPIO_PIN_RESET)
 #endif // __ST7735_H__
